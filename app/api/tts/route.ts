@@ -6,6 +6,7 @@ export async function GET() {
       status: 'ok',
       service: 'FishRouter TTS Bridge for Verity Mod',
       configured: Boolean(process.env.FISH_API_KEY && process.env.FISH_VOICE_ID),
+      model: process.env.FISH_MODEL || 's2.1-pro-free',
     }),
     {
       status: 200,
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
   try {
     const apiKey = process.env.FISH_API_KEY;
     const voiceId = process.env.FISH_VOICE_ID;
+    const model = process.env.FISH_MODEL || 's2.1-pro-free';
 
     if (!apiKey) {
       return new Response('FISH_API_KEY environment variable is not configured.', {
@@ -39,7 +41,6 @@ export async function POST(req: Request) {
       return new Response('No input text provided', { status: 400 });
     }
 
-    // Si viene un reference_id explícito en el body se puede priorizar, de lo contrario se usa FISH_VOICE_ID
     const targetVoiceId =
       body.reference_id && typeof body.reference_id === 'string'
         ? body.reference_id
@@ -50,11 +51,13 @@ export async function POST(req: Request) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
+        model: model,
       },
       body: JSON.stringify({
         text: inputText,
         reference_id: targetVoiceId,
         format: 'wav',
+        model: model,
       }),
     });
 
